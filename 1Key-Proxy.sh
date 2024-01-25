@@ -132,22 +132,28 @@ EOF
     return 0
 }
 
-echo "———————————————————————————————"
-echo "这里是1Key-Proxy.sh"
-echo "脚本运行时需要root权限，请使用sudo命令运行或以root身份运行"
+print_script_info() {
+    echo "===================================================="
+    echo "欢迎使用 1Key-Proxy.sh 脚本"
+    echo "----------------------------------------------------"
+    echo "提示: 脚本运行时需要 root 权限，请使用 sudo 命令运行或以 root 身份运行"
+    echo "适用系统: Ubuntu 22.04"
+    echo "用途: 快速搭建代理服务器"
+    echo "注意: 本脚本并非一键脚本，适用于有一定基础的用户"
+    echo "----------------------------------------------------"
+    echo "自动安装和配置：naiveproxy 和 hysteria2"
+    echo "所有步骤均来自官方文档，请放心使用"
+    echo "小白请按0请高明：www.cfri.edu.cn"
+    echo "===================================================="
+}
+
+print_script_info
 check_root
 check_curl
-echo "本脚本适用于Ubuntu 22.04，用于快速搭建代理服务器"
-echo "自动安装和配置naiveproxy和hysteria2，所有安装步骤均来源于官方文档，请放心使用"
-echo "本脚本并非一键脚本，仅用于快速搭建服务器，适用于有一定基础的用户，小白请按0请高明：www.cfri.edu.cn"
-echo "———————————————————————————————"
-
 read -p "如果您不同意脚本以root权限运行，请输入no退出，输入yes继续：" YES
 if [ ${YES,,} = "no" ]; then
     echo "您选择了退出，脚本将不会继续运行"
     exit 1
 fi
-
 hy2_installed
-
 naive
