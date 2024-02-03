@@ -108,16 +108,16 @@ na_config(){
     protocols h1 h2
   }
 }
-:443, $1 #你的域名
-tls $2 #你的邮箱
+:443, $1
+tls $2
 route {
  forward_proxy {
-   basic_auth $3 $4 #用户名和密码
+   basic_auth $3 $4
    hide_ip
    hide_via
    probe_resistance
   }
- reverse_proxy  $5  { #伪装网址
+ reverse_proxy  $5  {
    header_up  Host  {upstream_hostport}
    header_up  X-Forwarded-Host  {host}
   }
