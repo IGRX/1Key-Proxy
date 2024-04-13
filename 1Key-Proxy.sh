@@ -1,10 +1,27 @@
 #!/bin/bash
 
 # 检查root权限，免得安装麻烦
+
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+yellow(){
+    echo -e "\033[33m\033[01m$1\033[0m"
+}
+
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "———————————————————————————————"
-        echo -e "\033[1;31m错误：检测到无root权限，请使用root账户运行此脚本。\033[0m"
+        red "错误：检测到无root权限，请使用root账户运行此脚本。"
         echo "———————————————————————————————"
         exit 1
     fi
@@ -14,7 +31,7 @@ check_root() {
 check_curl() {
     if ! command -v curl &> /dev/null; then
         echo "———————————————————————————————"
-        echo -e "\033[1;31m错误：未找到curl，请先安装curl。\033[0m"
+        red "错误：未找到curl，请先安装curl。"
         echo "———————————————————————————————"
         exit 1
     fi
@@ -26,19 +43,20 @@ hy2(){
     chmod +x hy2.sh
     ./hy2.sh
     echo "———————————————————————————————"
-    echo "hysteria2安装完成，现在进行配置"
+    yellow "hysteria2安装完成，现在进行配置"
     echo "———————————————————————————————"
     local FLAG=0
     while [ "$FLAG" == 0 ]; do #防止在等待安装的时候输入回车，导致配置文件全空
         read -p "请输入yes开始配置：" key
-        if [ "$key" == $'\n' ]; then
-            FLAG=0
-        else
+        if [ "$key" == "yes" ]; then
             FLAG=1
             read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
             read -p "请输入您的邮箱地址：" EMAIL
             read -p "请输入您的hy2密码：" PASSWORD
             read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+            
+        else
+            FLAG=0
         fi
     done
     hy2_config $DOMAIN $EMAIL $PASSWORD $PROXYURL
@@ -102,7 +120,7 @@ naive_installed() {
 
 naive(){
     echo "———————————————————————————————"
-    echo -e "\033[1;33m正在安装和配置naiveproxy，请耐心等待，安装时间取决于网络环境及系统配置\033[0m"
+    yellow "正在安装和配置naiveproxy，请耐心等待，安装时间取决于网络环境及系统配置"
     echo "———————————————————————————————"
     apt-get install software-properties-common
     add-apt-repository ppa:longsleep/golang-backports 
@@ -113,15 +131,15 @@ naive(){
     local FLAG=0
     while [ "$FLAG" == 0 ]; do #防止在等待安装的时候输入回车，导致配置文件全空
         read -p "请输入yes开始配置：" key
-        if [ "$key" == $'\n' ]; then
-            FLAG=0
-        else
-            FLAG=1
+        if [ "$key" == "yes" ]; then
             read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
             read -p "请输入您的邮箱地址：" EMAIL
             read -p "请输入您的naive用户名：" USER
             read -p "请输入您的naive密码：" PASSWORD
             read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+            FLAG=1
+        else
+            FLAG=0
         fi
     done
     na_config $DOMAIN $EMAIL $USER $PASSWORD $PROXYURL
@@ -176,24 +194,57 @@ print_script_info() {
     echo "===================================================="
 }
 
+unhy2(){
+    yellow "正在卸载hysteria"
+    systemctl stop hysteria-server.service >/dev/null 2>&1
+    systemctl disable hysteria-server.service >/dev/null 2>&1
+    rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
+    rm -rf /usr/local/bin/hysteria /etc/hysteria
+    yellow "hysteria卸载完成"
+}
+
+unnaive(){
+    yellow "正在卸载naive"
+    ./caddy stop
+    rm -f /root/Caddyfile /root/caddy
+    yellow "naive卸载完成"
+}
+
+
 print_script_info
-check_root
-check_curl
 read -p "如果您不同意脚本以root权限运行，请输入no退出，输入yes继续：" YES
-if [ ${YES,,} = "no" ]; then
-    echo "您选择了退出，脚本将不会继续运行"
+if [ ${YES,,} = "yes" ]; then
+    check_root
+    check_curl
+else    
+    echo "您选择了退出"
     exit 1
 fi
-hy2_installed
-naive_installed
 
-echo "所有服务已全部安装，相关命令如下："
-echo "===================================================="
-echo "hy2相关命令："
-echo "服务器配置文件：/etc/hysteria/config.yaml"
-echo "启动hysteria服务：systemctl start hysteria-server.service"
-echo "开机自启动hysteria服务：systemctl enable hysteria-server.service"
-echo "===================================================="
-echo "naive相关命令："
-ecah "启动服务(前台运行)./caddy run"
-ecah "启动服务(后台运行)：./caddy start"
+echo "请选择功能："
+echo "1.安装naive&hysteria"
+echo "2.卸载naive&hysteria"
+
+read -p "请输入数字：" FUNCTION
+if [ ${FUNCTION,,} = 1 ]; then
+    hy2_installed
+    naive_installed
+    yellow "所有服务已全部安装，相关命令如下："
+    yellow "===================================================="
+    echo "hy2相关命令："
+    echo "服务器配置文件：/etc/hysteria/config.yaml"
+    echo "启动hysteria服务：systemctl start hysteria-server.service"
+    echo "开机自启动hysteria服务：systemctl enable hysteria-server.service"
+    yellow "===================================================="
+    echo "naive相关命令："
+    echo "启动服务(前台运行)./caddy run"
+    echo "启动服务(后台运行)：./caddy start"
+    yellow "===================================================="
+elif [ ${FUNCTION,,} = 2 ]; then
+    unhy2
+    unnaive
+    echo "所有服务已全部卸载"
+fi
+
+
+
