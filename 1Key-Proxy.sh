@@ -4,7 +4,7 @@
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "———————————————————————————————"
-        echo "错误：检测到无root权限，请使用root账户运行此脚本。"
+        echo -e "\033[1;31m错误：检测到无root权限，请使用root账户运行此脚本。\033[0m"
         echo "———————————————————————————————"
         exit 1
     fi
@@ -14,7 +14,7 @@ check_root() {
 check_curl() {
     if ! command -v curl &> /dev/null; then
         echo "———————————————————————————————"
-        echo "错误：未找到curl，请先安装curl。"
+        echo -e "\033[1;31m错误：未找到curl，请先安装curl。\033[0m"
         echo "———————————————————————————————"
         exit 1
     fi
@@ -28,10 +28,19 @@ hy2(){
     echo "———————————————————————————————"
     echo "hysteria2安装完成，现在进行配置"
     echo "———————————————————————————————"
-    read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
-    read -p "请输入您的邮箱地址：" EMAIL
-    read -p "请输入您的hy2密码：" PASSWORD
-    read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+    flag = false
+    while [ "$flag" == false ]; do #防止在等待安装的时候输入回车，导致配置文件全空
+        read -p "请输入yes开始配置：" key
+        if [ "$key" == $'\n' ]; then
+            flag = false
+        else
+            flag = true
+            read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
+            read -p "请输入您的邮箱地址：" EMAIL
+            read -p "请输入您的hy2密码：" PASSWORD
+            read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+        fi
+    done
     hy2_config $DOMAIN $EMAIL $PASSWORD $PROXYURL
 
     return 0
@@ -69,7 +78,7 @@ EOF
 }
 
 hy2_installed() {
-    if pgrep -x "hysteria" > /dev/null; then
+    if [ -x "hysteria" ]; then
         echo "———————————————————————————————"
         echo "Hysteria2 已经安装，跳过安装过程。"
         echo "———————————————————————————————"
@@ -80,9 +89,21 @@ hy2_installed() {
     fi
 }
 
+naive_installed() {
+    if [ -x "./caddy" ]; then
+        echo "———————————————————————————————"
+        echo "Caddy with naive plugin已经安装，跳过安装过程。"
+        echo "———————————————————————————————"
+        return 1
+    else
+        naive
+        return 0
+    fi
+}
+
 naive(){
     echo "———————————————————————————————"
-    echo "1Key-Proxy正在安装和配置naiveproxy，请耐心等待，时间取决于网络环境及系统配置"
+    echo -e "\033[1;33m正在安装和配置naiveproxy，请耐心等待，安装时间取决于网络环境及系统配置\033[0m"
     echo "———————————————————————————————"
     apt-get install software-properties-common
     add-apt-repository ppa:longsleep/golang-backports 
@@ -90,11 +111,20 @@ naive(){
     apt-get install golang-go
     go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
     ~/go/bin/xcaddy build --with github.com/caddyserver/forwardproxy@caddy2=github.com/klzgrad/forwardproxy@naive
-    read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
-    read -p "请输入您的邮箱地址：" EMAIL
-    read -p "请输入您的naive用户名：" USER
-    read -p "请输入您的naive密码：" PASSWORD
-    read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+    flag = false
+    while [ "$flag" == false ]; do #防止在等待安装的时候输入回车，导致配置文件全空
+        read -p "请输入yes开始配置：" key
+        if [ "$key" == $'\n' ]; then
+            flag = false
+        else
+            flag = true
+            read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
+            read -p "请输入您的邮箱地址：" EMAIL
+            read -p "请输入您的naive用户名：" USER
+            read -p "请输入您的naive密码：" PASSWORD
+            read -p "请输入您用于反向代理的网址，如www.baidu.com：" PROXYURL
+        fi
+    done
     na_config $DOMAIN $EMAIL $USER $PASSWORD $PROXYURL
     return 0
 }
@@ -156,4 +186,4 @@ if [ ${YES,,} = "no" ]; then
     exit 1
 fi
 hy2_installed
-naive
+naive_installed
