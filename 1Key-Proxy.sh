@@ -28,13 +28,13 @@ hy2(){
     echo "———————————————————————————————"
     echo "hysteria2安装完成，现在进行配置"
     echo "———————————————————————————————"
-    flag = false
-    while [ "$flag" == false ]; do #防止在等待安装的时候输入回车，导致配置文件全空
+    local FLAG=0
+    while [ "$FLAG" == 0 ]; do #防止在等待安装的时候输入回车，导致配置文件全空
         read -p "请输入yes开始配置：" key
         if [ "$key" == $'\n' ]; then
-            flag = false
+            FLAG=0
         else
-            flag = true
+            FLAG=1
             read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
             read -p "请输入您的邮箱地址：" EMAIL
             read -p "请输入您的hy2密码：" PASSWORD
@@ -42,7 +42,6 @@ hy2(){
         fi
     done
     hy2_config $DOMAIN $EMAIL $PASSWORD $PROXYURL
-
     return 0
 }
 
@@ -78,7 +77,7 @@ EOF
 }
 
 hy2_installed() {
-    if [ -x "hysteria" ]; then
+    if [ -x "$(command -v hysteria)" ]; then
         echo "———————————————————————————————"
         echo "Hysteria2 已经安装，跳过安装过程。"
         echo "———————————————————————————————"
@@ -111,13 +110,13 @@ naive(){
     apt-get install golang-go
     go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
     ~/go/bin/xcaddy build --with github.com/caddyserver/forwardproxy@caddy2=github.com/klzgrad/forwardproxy@naive
-    flag = false
-    while [ "$flag" == false ]; do #防止在等待安装的时候输入回车，导致配置文件全空
+    local FLAG=0
+    while [ "$FLAG" == 0 ]; do #防止在等待安装的时候输入回车，导致配置文件全空
         read -p "请输入yes开始配置：" key
         if [ "$key" == $'\n' ]; then
-            flag = false
+            FLAG=0
         else
-            flag = true
+            FLAG=1
             read -p "现在进行acme证书配置，请输入解析到此服务器的域名：" DOMAIN
             read -p "请输入您的邮箱地址：" EMAIL
             read -p "请输入您的naive用户名：" USER
@@ -187,3 +186,14 @@ if [ ${YES,,} = "no" ]; then
 fi
 hy2_installed
 naive_installed
+
+echo "所有服务已全部安装，相关命令如下："
+echo "===================================================="
+echo "hy2相关命令："
+echo "服务器配置文件：/etc/hysteria/config.yaml"
+echo "启动hysteria服务：systemctl start hysteria-server.service"
+echo "开机自启动hysteria服务：systemctl enable hysteria-server.service"
+echo "===================================================="
+echo "naive相关命令："
+ecah "启动服务(前台运行)./caddy run"
+ecah "启动服务(后台运行)：./caddy start"
