@@ -224,6 +224,7 @@ fi
 echo "请选择功能："
 echo "1.安装naive&hysteria"
 echo "2.卸载naive&hysteria"
+echo "3.卸载hysteria"
 
 read -p "请输入数字：" FUNCTION
 if [ ${FUNCTION,,} = 1 ]; then
@@ -241,9 +242,11 @@ if [ ${FUNCTION,,} = 1 ]; then
     echo "启动服务(后台运行)：./caddy start"
     yellow "===================================================="
 elif [ ${FUNCTION,,} = 2 ]; then
-    unhy2
     unnaive
-    echo "所有服务已全部卸载"
+    echo "naive已卸载"
+elif [ ${FUNCTION,,} = 3 ]; then
+    unhy2
+    echo "hysteria已卸载"
 fi
 
 
