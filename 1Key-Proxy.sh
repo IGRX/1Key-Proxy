@@ -196,10 +196,12 @@ print_script_info() {
 
 unhy2(){
     yellow "正在卸载hysteria"
-    systemctl stop hysteria-server.service >/dev/null 2>&1
-    systemctl disable hysteria-server.service >/dev/null 2>&1
-    rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
-    rm -rf /usr/local/bin/hysteria /etc/hysteria
+    bash <(curl -fsSL https://get.hy2.sh/) --remove
+    rm -rf /etc/hysteria
+    userdel -r hysteria
+    rm -f /etc/systemd/system/multi-user.target.wants/hysteria-server.service
+    rm -f /etc/systemd/system/multi-user.target.wants/hysteria-server@*.service
+    systemctl daemon-reload
     yellow "hysteria卸载完成"
 }
 
@@ -222,31 +224,32 @@ else
 fi
 
 echo "请选择功能："
-echo "1.安装naive&hysteria"
-echo "2.卸载naive&hysteria"
-echo "3.卸载hysteria"
+echo "1.安装naive"
+echo "2.安装hysteria"
+echo "3.卸载naive"
+echo "4.卸载hysteria"
 
 read -p "请输入数字：" FUNCTION
 if [ ${FUNCTION,,} = 1 ]; then
-    hy2_installed
     naive_installed
-    yellow "所有服务已全部安装，相关命令如下："
+    yellow "hysteria2已安装，相关命令如下："
+    yellow "===================================================="
+    echo "naive已安装，相关命令："
+    echo "启动服务(前台运行)./caddy run"
+    echo "启动服务(后台运行)：./caddy start"
+    yellow "===================================================="
+elif [ ${FUNCTION,,} = 2 ]; then
+    hy2_installed
     yellow "===================================================="
     echo "hy2相关命令："
     echo "服务器配置文件：/etc/hysteria/config.yaml"
     echo "启动hysteria服务：systemctl start hysteria-server.service"
     echo "开机自启动hysteria服务：systemctl enable hysteria-server.service"
     yellow "===================================================="
-    echo "naive相关命令："
-    echo "启动服务(前台运行)./caddy run"
-    echo "启动服务(后台运行)：./caddy start"
-    yellow "===================================================="
-elif [ ${FUNCTION,,} = 2 ]; then
-    unnaive
-    echo "naive已卸载"
 elif [ ${FUNCTION,,} = 3 ]; then
+    unnaive
+elif [ ${FUNCTION,,} = 4 ]; then
     unhy2
-    echo "hysteria已卸载"
 fi
 
 
