@@ -37,6 +37,15 @@ check_curl() {
     fi
 }
 
+check_ntp(){
+    if ! command -v ntpd &> /dev/null; then
+        echo "———————————————————————————————"
+        red "错误：未找到ntp，请先安装ntp。"
+        echo "———————————————————————————————"
+        exit 1
+    fi
+}
+
 hy2(){
     echo "1Key-Proxy正在安装和配置hysteria2，请耐心等待，以下操作均来自于官方文档"
     curl -fsSL https://get.hy2.sh/ -o hy2.sh
@@ -218,6 +227,7 @@ read -p "如果您不同意脚本以root权限运行，请输入no退出，输�
 if [ ${YES,,} = "yes" ]; then
     check_root
     check_curl
+    check_ntp
 else    
     echo "您选择了退出"
     exit 1
