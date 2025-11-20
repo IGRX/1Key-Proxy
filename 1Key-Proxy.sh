@@ -242,16 +242,15 @@ echo "4.卸载hysteria"
 read -p "请输入数字：" FUNCTION
 if [ ${FUNCTION,,} = 1 ]; then
     naive_installed
-    yellow "hysteria2已安装，相关命令如下："
+    yellow "naive已安装，相关命令如下："
     yellow "===================================================="
-    echo "naive已安装，相关命令："
     echo "启动服务(前台运行)./caddy run"
     echo "启动服务(后台运行)：./caddy start"
     yellow "===================================================="
 elif [ ${FUNCTION,,} = 2 ]; then
     hy2_installed
+    yellow "hysteria2已安装，相关命令如下："
     yellow "===================================================="
-    echo "hy2相关命令："
     echo "服务器配置文件：/etc/hysteria/config.yaml"
     echo "启动hysteria服务：systemctl start hysteria-server.service"
     echo "开机自启动hysteria服务：systemctl enable hysteria-server.service"
